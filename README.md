@@ -5,11 +5,7 @@
   </picture>
 </p>
 
-<p align="center">
-  lowfat reduces AI token costs automatically by filtering unnecessary CLI output before it reaches your agent.
-</p>
-
-Wrap commands as shell functions and pipe them through composable processors like `grep`, `cut`, `head`, and `token-budget`.
+lowfat reduces AI token costs automatically by filtering unnecessary CLI output before it reaches your agent. Wrap commands as shell functions and pipe them through composable processors like `grep`, `cut`, `head`, and `token-budget`.
 
 <p align="center">
   <img src="docs/demo.gif" alt="lowfat demo: git diff before and after" width="700">
