@@ -17,6 +17,8 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Show resolved config and validate .lowfat file
+    Config,
     /// List enabled/disabled filters
     Filters {
         /// Print only command names (one per line), for shell-init
@@ -91,6 +93,7 @@ fn main() {
     let cli = Cli::parse();
 
     let result = match cli.command {
+        Some(Commands::Config) => commands::config::run(),
         Some(Commands::Filters { commands }) => commands::filters::run(commands),
         Some(Commands::Hook) => commands::hook::run(),
         Some(Commands::Gain) => commands::gain::run(),

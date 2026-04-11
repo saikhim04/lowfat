@@ -87,6 +87,7 @@ LOWFAT_LEVEL=lite lowfat git log  # per-command override
 #### Inspecting state
 
 ```sh
+lowfat config             # show resolved config and validate .lowfat
 lowfat filters            # list enabled/disabled filters
 lowfat pipeline git       # show active pipeline for a command
 lowfat gain               # show lifetime token savings report
