@@ -163,10 +163,24 @@ fn filter_show(raw: &str, level: Level) -> String {
                 .join("\n")
         }
         // Full: commit header + diff-content lines (same treatment as `git diff`).
-        // Drops unchanged context, index/mode meta, --- / +++ path markers, blanks.
+        // Drops unchanged context, index/mode meta, blanks. The 4-space rule for
+        // commit messages is positional — once we cross the first `diff ` line,
+        // a leading "    " is just a deeply-indented context line (Rust, JSON…)
+        // and must drop, otherwise it bleeds in as if it were message body.
         Level::Full => {
+            let mut in_diff = false;
             raw.lines()
-                .filter(|l| is_commit_header(l) || is_diff_line(l))
+                .filter(|l| {
+                    if l.starts_with("diff ") {
+                        in_diff = true;
+                        return true;
+                    }
+                    if in_diff {
+                        is_diff_line(l)
+                    } else {
+                        is_commit_header(l)
+                    }
+                })
                 .take(100)
                 .collect::<Vec<_>>()
                 .join("\n")
@@ -279,6 +293,38 @@ index abc..def 100644
         assert!(out.contains("+new line"));
         assert!(!out.contains("unchanged context"), "should drop context: {out}");
         assert!(!out.contains("index abc"), "should drop index meta: {out}");
+    }
+
+    #[test]
+    fn show_full_drops_indented_context_after_diff() {
+        // Regression: `    ` rule for commit-message body must not match
+        // deeply indented diff context (Rust source is 4-space indented).
+        let raw = "\
+commit abc123
+Author: zdk
+Date:   Mon
+
+    refactor
+
+diff --git a/f b/f
+@@ -1,3 +1,3 @@
+     let x = 1;
+-    let y = 2;
++    let y = 3;
+     println!(\"{x} {y}\");
+";
+        let out = filter_show(raw, Level::Full);
+        assert!(out.contains("    refactor"), "keep message body: {out}");
+        assert!(out.contains("-    let y = 2;"));
+        assert!(out.contains("+    let y = 3;"));
+        assert!(
+            !out.contains("    let x = 1;"),
+            "must drop indented context: {out}"
+        );
+        assert!(
+            !out.contains("println!"),
+            "must drop indented context: {out}"
+        );
     }
 
     #[test]

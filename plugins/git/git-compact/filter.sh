@@ -48,8 +48,15 @@ case "$SUB" in
         echo "$RAW" | grep -E '^(commit |Author:|Date:|    |diff --git)' | head -n 20
         ;;
       *)
-        # Commit header + diff-content lines (drops context + index/mode meta)
-        echo "$RAW" | grep -E '^(commit |Merge:|Author:|Date:|    |diff |--- |\+\+\+ |@@ |[+-])' | head -n 100
+        # Commit header lines, then diff-content lines once we've crossed the
+        # first `diff` marker. The 4-space rule for commit messages is gated by
+        # `in_diff`, otherwise it bleeds deeply-indented context (Rust, JSON…)
+        # back into the output and tanks savings on small commits.
+        echo "$RAW" | awk '
+          /^diff / { in_diff=1; print; next }
+          !in_diff && /^(commit |Merge:|Author:|Date:|    )/ { print; next }
+          in_diff && /^(--- |\+\+\+ |@@ |[+-])/ { print }
+        ' | head -n 100
         ;;
     esac
     ;;
