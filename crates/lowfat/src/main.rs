@@ -41,6 +41,12 @@ enum Commands {
     },
     /// Local usage history (powers plugin candidate ranking)
     History {
+        /// Number of rows to show (bare form only — equivalent to `candidates --limit`)
+        #[arg(long, default_value = "20")]
+        limit: usize,
+        /// Include trivia rows (bare form only — equivalent to `candidates --all`)
+        #[arg(long)]
+        all: bool,
         #[command(subcommand)]
         action: Option<HistoryAction>,
     },
@@ -148,7 +154,7 @@ fn main() {
         Some(Commands::Status) => commands::status::run(),
         Some(Commands::Pipeline { cmd }) => commands::pipeline::run(&cmd),
         Some(Commands::Audit { limit }) => commands::audit::run(limit),
-        Some(Commands::History { action }) => match action {
+        Some(Commands::History { limit, all, action }) => match action {
             Some(HistoryAction::Candidates { limit, all }) => commands::candidates::run(limit, all),
             Some(HistoryAction::Export) => commands::history_export::run(),
             Some(HistoryAction::Prune {
@@ -164,7 +170,7 @@ fn main() {
                 all,
                 dry_run,
             }),
-            None => commands::candidates::run(20, false),
+            None => commands::candidates::run(limit, all),
         },
         Some(Commands::ShellInit { shell }) => commands::shell_init::run(&shell),
         Some(Commands::Plugin { action }) => match action {
