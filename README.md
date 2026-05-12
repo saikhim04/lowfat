@@ -154,17 +154,35 @@ Env vars take priority over `.lowfat` file. History and gain data live at `$LOWF
 
 ### Find plugin gaps
 
-`lowfat history` ranks your real usage by `runs × avg tokens × (1 − savings)` so commands that run often, produce a lot of output, and aren't being trimmed yet float to the top — exactly the ones worth writing a plugin for.
+`lowfat history` ranks your real usage by `cost = runs × avg tokens × (1 − savings)` so commands that run often, produce a lot of output, and aren't being trimmed yet float to the top — exactly the ones worth writing (or tightening) a plugin for.
 
 ```
-  #  command                    runs    avg raw   savings  plugin
-  1  git status                  12x         59     91.5%     yes
-  2  ls                           8x        211      0.9%     yes
-  3  kubectl get                  6x      4.2K      0.0%      no
-  4  terraform plan               3x       12K      0.0%      no
+  #  command                    runs   avg raw      cost   savings  source    status  volume
+  1  ls                         299x        91     27.3K     51.2%  built-in  good    ██████████
+  2  git show                    32x       608     19.5K     39.5%  built-in  good    █████████░
+  3  git                         74x       770     57.0K     83.6%  built-in  good    ███████░░░
+  4  docker                      68x      4.7K    320.1K     97.4%  built-in  good    ██████░░░░
+  5  git diff                    27x       234      6.3K     15.9%  built-in  weak    ████░░░░░░
+  6  git log                     33x       137      4.5K     32.3%  built-in  good    ██░░░░░░░░
+  7  terraform                    7x       544      3.8K     33.2%  plugin    good    ██░░░░░░░░
+  8  kubectl                     10x       248      2.5K      7.4%  plugin    weak    ██░░░░░░░░
+  9  docker compose              22x       979     21.5K     89.4%  built-in  good    ██░░░░░░░░
+ 10  docker images                4x      1.3K      5.3K     63.8%  built-in  good    █░░░░░░░░░
+ 11  docker ps                    9x       321      2.9K     47.7%  built-in  good    █░░░░░░░░░
+ 12  git commit                  11x       114      1.3K      0.0%  built-in  weak    █░░░░░░░░░
+ 13  git status                  40x       115      4.6K     74.6%  built-in  good    █░░░░░░░░░
+ 14  git push                    12x        50       602      3.3%  built-in  weak    ░░░░░░░░░░
+ 15  terraform plan               4x       336      1.3K     60.1%  plugin    good    ░░░░░░░░░░
+ 16  docker pull                  7x        78       544     20.2%  built-in  good    ░░░░░░░░░░
+ 17  kubectl get                  4x        54       215      0.0%  plugin    weak    ░░░░░░░░░░
+ 18  git tag                      7x        21       150      0.7%  built-in  weak    ░░░░░░░░░░
+ 19  git checkout                 4x        32       126      0.0%  built-in  weak    ░░░░░░░░░░
+ 20  git remote                   4x        15        60      0.0%  built-in  weak    ░░░░░░░░░░
+
+total: 479.6K raw → 413.4K saved (86.2%)
 ```
 
-`no`-plugin rows are the best candidates. Only `command` + first non-flag arg is stored locally (capped at 10k rows) — never full arguments, output, or secrets.
+`weak`-status rows are the best targets — high cost relative to current savings. `source` shows whether trimming is coming from a built-in or an external plugin. Only `command` + first non-flag arg is stored locally (capped at 10k rows) — never full arguments, output, or secrets.
 
 Prune selectively when the table gets noisy (lifetime `gain` totals are kept intact):
 
