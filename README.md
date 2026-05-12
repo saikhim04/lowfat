@@ -146,9 +146,6 @@ Env vars take priority over `.lowfat` file. History and gain data live at `$LOWF
 | `git status`   | 115t   | 5t       | **96%** |
 | `git diff`     | 2,376t | 115t     | **95%** |
 | `git log`      | 379t   | 118t     | **69%** |
-| `cargo build`  | 558t   | 18t      | **96%** |
-| `cargo clippy` | 2,023t | 292t     | **85%** |
-| `cargo test`   | 1,499t | 171t     | **88%** |
 | `docker ps`    | 271t   | 41t      | **85%** |
 | `ls -la`       | 192t   | 30t      | **84%** |
 
