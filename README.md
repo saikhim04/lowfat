@@ -72,6 +72,18 @@ lowfat docker ps
 lowfat ls -la
 ```
 
+#### Option D: pi agent integration
+
+If you are using the `pi` agent, add the following to your `~/.pi/agent/settings.json` to enable hooks exclusively for the agent without affecting your normal terminal:
+
+```json
+{
+  "shellCommandPrefix": "eval \"$(lowfat shell-init zsh)\"; "
+}
+```
+
+This approach initializes the lowfat hook precisely when pi spawns a subshell to run a command. It guarantees that your token savings and command history are captured correctly exclusively for the agent, keeping your normal terminal usage completely unaffected.
+
 #### Intensity levels
 
 Three levels control how aggressively output is compressed:
